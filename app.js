@@ -3,6 +3,7 @@ const SETTINGS_KEY = "clarity-flipper-settings-v1";
 const DEFAULT_PIXELS_PER_MM = 96 / 25.4;
 const SNELLEN_VIEWING_DISTANCE_MM = 400;
 const SNELLEN_DENOMINATORS = [20, 25, 30, 40, 50, 60, 80, 100];
+const OPTOTYPE_GRID_UNITS = 5;
 const ANSWER_FEEDBACK_DURATION_MS = 220;
 
 const directions = {
@@ -105,21 +106,36 @@ function getSnellenTargetHeightMm(denominator) {
   );
 }
 
+function alignTargetSizeToDevicePixels(targetCssPixels) {
+  const renderedPixelsPerCssPixel =
+    (window.devicePixelRatio || 1) * getViewportScale();
+  const targetDevicePixels = targetCssPixels * renderedPixelsPerCssPixel;
+  const alignedTargetDevicePixels =
+    Math.ceil(targetDevicePixels / OPTOTYPE_GRID_UNITS) *
+    OPTOTYPE_GRID_UNITS;
+  return alignedTargetDevicePixels / renderedPixelsPerCssPixel;
+}
+
 function updateTargetSize() {
   const currentTargetSizeMm = getSnellenTargetHeightMm(
     state.snellenDenominator,
   );
-  const targetPixels = currentTargetSizeMm * getPixelsPerMm();
+  const currentPixelsPerMm = getPixelsPerMm();
+  const targetPixels = alignTargetSizeToDevicePixels(
+    currentTargetSizeMm * currentPixelsPerMm,
+  );
   document.documentElement.style.setProperty(
     "--target-size",
     `${targetPixels.toFixed(3)}px`,
   );
 
-  const snellenSizeText = `${currentTargetSizeMm.toFixed(2)} mm`;
+  const displayedTargetSizeMm = targetPixels / currentPixelsPerMm;
+  const snellenSizeText = `${displayedTargetSizeMm.toFixed(2)} mm`;
   elements.snellenSizeOutput.value = snellenSizeText;
   elements.snellenSizeOutput.textContent = snellenSizeText;
   elements.physicalSizeLabel.textContent = `20/${state.snellenDenominator}`;
-  elements.physicalSizeLabel.title = `40 cm 视距下高 ${snellenSizeText}`;
+  elements.physicalSizeLabel.title =
+    `40 cm 视距下显示高 ${snellenSizeText}（像素对齐）`;
 }
 
 function updateCalibrationState() {

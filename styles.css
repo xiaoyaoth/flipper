@@ -324,6 +324,7 @@ main {
   height: 100%;
   display: block;
   fill: var(--ink);
+  shape-rendering: crispEdges;
   transform: rotate(var(--target-rotation, 0deg));
   transform-origin: center;
 }

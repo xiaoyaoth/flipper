@@ -1,10 +1,10 @@
 const CACHE_PREFIX = "clarity-flipper-";
-const CACHE_NAME = `${CACHE_PREFIX}20261008-11`;
+const CACHE_NAME = `${CACHE_PREFIX}20261008-12`;
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=20261008-11",
-  "./app.js?v=20261008-11",
+  "./styles.css?v=20261008-12",
+  "./app.js?v=20261008-12",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./icons/icon-192.png",
