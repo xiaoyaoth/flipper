@@ -1119,14 +1119,20 @@ body.is-session-active .target-wrap {
   transition: none;
 }
 
-body.is-session-active .stage.is-correct .optotype {
-  fill: var(--accent);
+body.is-session-active .stage.is-correct .optotype,
+body.is-session-active .stage.is-wrong .optotype {
+  fill: var(--ink);
   animation: none;
 }
 
-body.is-session-active .stage.is-wrong .optotype {
-  fill: var(--danger);
-  animation: none;
+body.is-session-active .stage.is-correct .focus-countdown span,
+body.is-session-active .stage.is-correct .focus-countdown strong {
+  color: var(--accent);
+}
+
+body.is-session-active .stage.is-wrong .focus-countdown span,
+body.is-session-active .stage.is-wrong .focus-countdown strong {
+  color: var(--danger);
 }
 
 body.is-session-active .answer-panel {
