@@ -1,0 +1,21 @@
+{
+  "name": "clarity-flipper",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build:voice-model": "node scripts/build-default-voice-model.mjs"
+  },
+  "devDependencies": {
+    "@tensorflow-models/speech-commands": "0.5.4",
+    "@tensorflow/tfjs": "4.22.0",
+    "@tensorflow/tfjs-node": "4.22.0",
+    "fft.js": "4.0.4"
+  },
+  "overrides": {
+    "@tensorflow-models/speech-commands": {
+      "@tensorflow/tfjs-core": "4.22.0",
+      "@tensorflow/tfjs-data": "4.22.0",
+      "@tensorflow/tfjs-layers": "4.22.0"
+    }
+  }
+}

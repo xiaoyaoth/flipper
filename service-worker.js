@@ -1,14 +1,20 @@
 const CACHE_PREFIX = "clarity-flipper-";
-const CACHE_NAME = `${CACHE_PREFIX}20261008-14`;
+const CACHE_NAME = `${CACHE_PREFIX}20261008-16`;
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=20261008-14",
-  "./app.js?v=20261008-14",
+  "./styles.css?v=20261008-16",
+  "./vendor/tensorflow/tf.min.js?v=20261008-16",
+  "./vendor/tensorflow/speech-commands.min.js?v=20261008-16",
+  "./voice-control.js?v=20261008-16",
+  "./app.js?v=20261008-16",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
+  "./voice-model/model.json",
+  "./voice-model/metadata.json",
+  "./voice-model/group1-shard1of1.bin",
 ];
 
 self.addEventListener("install", (event) => {

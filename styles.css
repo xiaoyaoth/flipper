@@ -188,7 +188,11 @@ a:focus-visible {
 }
 
 .icon-button svg,
-.session-actions svg {
+.session-actions svg,
+.voice-train-button svg,
+.voice-dialog-actions svg,
+.dialog-close-button svg,
+.voice-indicator svg {
   width: 19px;
   height: 19px;
   fill: none;
@@ -268,6 +272,45 @@ main {
   display: grid;
   place-items: center;
   overflow: hidden;
+}
+
+.voice-indicator {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid #c7d0cc;
+  border-radius: 5px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 10px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.voice-indicator svg {
+  width: 14px;
+  height: 14px;
+}
+
+.voice-indicator[data-state="listening"] svg {
+  color: var(--accent);
+}
+
+.voice-indicator[data-state="detected"] {
+  border-color: var(--accent);
+  color: var(--accent-strong);
+  background: var(--accent-soft);
+}
+
+.voice-indicator[data-state="error"] {
+  border-color: rgba(198, 71, 50, 0.4);
+  color: var(--danger);
 }
 
 .stage::before,
@@ -570,6 +613,38 @@ input[type="range"] {
   line-height: 1.45;
 }
 
+#voiceStatus[data-state="error"] {
+  color: var(--danger);
+}
+
+.voice-train-button {
+  width: 100%;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin-top: 13px;
+  padding: 0 12px;
+  border: 1px solid #b9c7c2;
+  border-radius: 6px;
+  color: var(--accent-strong);
+  background: var(--surface);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.voice-train-button:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: #f7fbfa;
+}
+
+.voice-train-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
 .switch {
   position: relative;
   flex: 0 0 auto;
@@ -695,7 +770,8 @@ footer {
   font-size: 11px;
 }
 
-.calibration-dialog {
+.calibration-dialog,
+.voice-dialog {
   width: min(520px, calc(100% - 28px));
   max-height: calc(100dvh - 28px);
   overflow-y: auto;
@@ -707,11 +783,13 @@ footer {
   box-shadow: 0 22px 70px rgba(21, 25, 24, 0.22);
 }
 
-.calibration-dialog::backdrop {
+.calibration-dialog::backdrop,
+.voice-dialog::backdrop {
   background: rgba(18, 24, 22, 0.62);
 }
 
-.calibration-card {
+.calibration-card,
+.voice-training-card {
   padding: clamp(24px, 5vw, 38px);
 }
 
@@ -720,6 +798,176 @@ footer {
   font-size: 26px;
   line-height: 1.2;
   letter-spacing: 0;
+}
+
+.voice-dialog {
+  width: min(560px, calc(100% - 28px));
+}
+
+.voice-dialog-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.dialog-close-button {
+  width: 36px;
+  height: 36px;
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.dialog-close-button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.voice-training-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 22px;
+  border-top: 1px solid var(--line);
+  border-left: 1px solid var(--line);
+}
+
+.voice-training-step {
+  min-width: 0;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 0 11px;
+  border-right: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  color: var(--muted);
+  background: #fafbf9;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.voice-training-step.is-complete {
+  color: var(--accent-strong);
+  background: #f2f8f6;
+}
+
+.sample-markers {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.sample-markers i {
+  width: 7px;
+  height: 7px;
+  border: 1px solid #aeb9b4;
+  border-radius: 50%;
+  background: var(--surface);
+}
+
+.sample-markers i.is-filled {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+
+.recording-prompt {
+  min-height: 112px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 5px;
+  margin-top: 18px;
+  border: 1px solid #c7d0cc;
+  border-radius: 6px;
+  background: #f6f8f6;
+  text-align: center;
+}
+
+.recording-prompt > span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.recording-prompt strong {
+  font-size: 25px;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.recording-prompt small {
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.recording-prompt.is-complete {
+  border-color: #9fc3b9;
+  background: var(--accent-soft);
+}
+
+.voice-training-progress {
+  height: 5px;
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 3px;
+  background: #dfe5e2;
+}
+
+.voice-training-progress span {
+  width: 0;
+  height: 100%;
+  display: block;
+  background: var(--accent);
+  transition: width 180ms ease;
+}
+
+.voice-training-status {
+  min-height: 18px;
+  margin: 9px 0 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.voice-training-status[data-state="error"] {
+  color: var(--danger);
+}
+
+.voice-dialog-actions {
+  grid-template-columns: 1fr 1fr;
+  margin-top: 15px;
+}
+
+.voice-dialog-actions .text-button {
+  grid-column: 1 / -1;
+}
+
+.voice-dialog-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+#recordVoiceSampleButton.is-recording svg {
+  color: #fff;
+  animation: voice-recording-pulse 700ms ease-in-out infinite alternate;
+}
+
+@keyframes voice-recording-pulse {
+  from {
+    opacity: 0.45;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 .dialog-heading p {
@@ -970,12 +1218,25 @@ footer {
       max(16px, env(safe-area-inset-left, 0px));
   }
 
-  .calibration-card {
+  .calibration-card,
+  .voice-training-card {
     padding: 24px 18px 20px;
   }
 
   .dialog-heading h2 {
     font-size: 23px;
+  }
+
+  .voice-training-steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .voice-dialog-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .voice-dialog-actions .text-button {
+    grid-column: auto;
   }
 
 }

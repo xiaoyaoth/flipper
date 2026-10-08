@@ -61,6 +61,8 @@ const state = {
   calibration: readJson(CALIBRATION_KEY),
 };
 
+let voiceControl = null;
+
 function readJson(key) {
   try {
     const value = localStorage.getItem(key);
@@ -306,6 +308,7 @@ function startSession() {
   setStartButton("pause");
   state.timerId = window.setInterval(updateMetrics, 200);
   updateMetrics();
+  voiceControl?.onSessionStart();
 }
 
 function pauseSession() {
@@ -317,6 +320,7 @@ function pauseSession() {
   setControlsEnabled(false);
   setStartButton("resume");
   updateMetrics();
+  voiceControl?.onSessionStop();
 }
 
 function completeSession() {
@@ -331,6 +335,7 @@ function completeSession() {
   setControlsEnabled(false);
   setStartButton("start");
   updateMetrics();
+  voiceControl?.onSessionStop();
 }
 
 function resetSession() {
@@ -348,6 +353,7 @@ function resetSession() {
   setStartButton("start");
   chooseNextDirection();
   updateMetrics();
+  voiceControl?.onSessionStop();
 }
 
 function handleStartButton() {
@@ -544,6 +550,13 @@ window.addEventListener("resize", () => {
   updateTargetSize();
 });
 window.visualViewport?.addEventListener("resize", updateTargetSize);
+
+if (window.ClarityVoiceControl) {
+  voiceControl = new window.ClarityVoiceControl({
+    onDirection: answer,
+    isSessionRunning: () => state.status === "running",
+  });
+}
 
 restoreSettings();
 saveSettings();

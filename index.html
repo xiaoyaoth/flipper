@@ -26,7 +26,7 @@
       sizes="192x192"
       href="./icons/icon-192.png"
     />
-    <link rel="stylesheet" href="./styles.css?v=20261008-14" />
+    <link rel="stylesheet" href="./styles.css?v=20261008-16" />
   </head>
   <body>
     <div class="app-shell">
@@ -96,6 +96,13 @@
             <div class="focus-countdown" aria-label="训练剩余时间">
               <span>剩余</span>
               <strong id="focusTimeValue">01:00</strong>
+            </div>
+            <div class="voice-indicator" id="voiceIndicator" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z" />
+                <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" />
+              </svg>
+              <span id="voiceIndicatorText">正在听</span>
             </div>
             <div class="target-wrap" id="targetWrap">
               <svg
@@ -192,10 +199,42 @@
                 <small>每次识别后给出声音反馈</small>
               </div>
               <label class="switch">
-                <input id="soundToggle" type="checkbox" />
+                <input
+                  id="soundToggle"
+                  type="checkbox"
+                  aria-label="答对提示音"
+                />
                 <span aria-hidden="true"></span>
               </label>
             </div>
+          </div>
+
+          <div class="setting-group voice-setting">
+            <div class="switch-row">
+              <div>
+                <span class="setting-label">语音作答</span>
+                <small id="voiceStatus" aria-live="polite">离线默认模型</small>
+              </div>
+              <label class="switch">
+                <input
+                  id="voiceToggle"
+                  type="checkbox"
+                  aria-label="语音作答"
+                />
+                <span aria-hidden="true"></span>
+              </label>
+            </div>
+            <button
+              class="voice-train-button"
+              id="openVoiceTrainingButton"
+              type="button"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z" />
+                <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" />
+              </svg>
+              <span>训练我的声音</span>
+            </button>
           </div>
 
           <p class="safety-note">
@@ -316,6 +355,85 @@
       </form>
     </dialog>
 
-    <script src="./app.js?v=20261008-14"></script>
+    <dialog class="voice-dialog" id="voiceTrainingDialog">
+      <div class="voice-training-card">
+        <div class="voice-dialog-header">
+          <div class="dialog-heading">
+            <span class="step-label">个性化识别</span>
+            <h2>训练我的声音</h2>
+            <p>每项录制 3 次。录音仅在本机处理和保存。</p>
+          </div>
+          <button
+            class="dialog-close-button"
+            id="closeVoiceTrainingButton"
+            type="button"
+            aria-label="关闭"
+            title="关闭"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m6 6 12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="voice-training-steps" id="voiceTrainingSteps"></div>
+
+        <div class="recording-prompt" id="recordingPrompt">
+          <span id="recordingStepLabel">第 1 项，共 6 项</span>
+          <strong id="recordingPromptText">说“上”</strong>
+          <small id="recordingSampleCount">0 / 3</small>
+        </div>
+
+        <div
+          class="voice-training-progress"
+          role="progressbar"
+          aria-label="声音样本录制进度"
+          aria-valuemin="0"
+          aria-valuemax="18"
+          aria-valuenow="0"
+        >
+          <span id="voiceTrainingProgress"></span>
+        </div>
+
+        <p class="voice-training-status" id="voiceTrainingStatus" aria-live="polite">
+          准备录制
+        </p>
+
+        <div class="dialog-actions voice-dialog-actions">
+          <button
+            class="primary-button"
+            id="recordVoiceSampleButton"
+            type="button"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z" />
+              <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" />
+            </svg>
+            <span>录制本条</span>
+          </button>
+          <button
+            class="secondary-button"
+            id="trainVoiceModelButton"
+            type="button"
+            disabled
+          >
+            生成我的模型
+          </button>
+          <button
+            class="text-button"
+            id="resetVoiceModelButton"
+            type="button"
+            hidden
+          >
+            恢复默认模型
+          </button>
+        </div>
+      </div>
+    </dialog>
+
+    <script src="./vendor/tensorflow/tf.min.js?v=20261008-16"></script>
+    <script src="./vendor/tensorflow/speech-commands.min.js?v=20261008-16"></script>
+    <script src="./voice-control.js?v=20261008-16"></script>
+    <script src="./app.js?v=20261008-16"></script>
   </body>
 </html>
