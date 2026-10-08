@@ -1,17 +1,21 @@
 const CACHE_PREFIX = "clarity-flipper-";
-const CACHE_NAME = `${CACHE_PREFIX}20261008-16`;
+const CACHE_NAME = `${CACHE_PREFIX}20261008-17`;
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=20261008-16",
-  "./vendor/tensorflow/tf.min.js?v=20261008-16",
-  "./vendor/tensorflow/speech-commands.min.js?v=20261008-16",
-  "./voice-control.js?v=20261008-16",
-  "./app.js?v=20261008-16",
+  "./styles.css?v=20261008-17",
+  "./vendor/tensorflow/tf.min.js?v=20261008-17",
+  "./vendor/tensorflow/speech-commands.min.js?v=20261008-17",
+  "./vendor/blazeface/blazeface.min.js?v=20261008-17",
+  "./distance-control.js?v=20261008-17",
+  "./voice-control.js?v=20261008-17",
+  "./app.js?v=20261008-17",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./icons/icon-192.png",
   "./icons/icon-512.png",
+  "./distance-model/model.json",
+  "./distance-model/group1-shard1of1.bin",
   "./voice-model/model.json",
   "./voice-model/metadata.json",
   "./voice-model/group1-shard1of1.bin",

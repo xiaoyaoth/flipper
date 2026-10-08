@@ -190,9 +190,12 @@ a:focus-visible {
 .icon-button svg,
 .session-actions svg,
 .voice-train-button svg,
+.distance-calibrate-button svg,
+.distance-dialog svg,
 .voice-dialog-actions svg,
 .dialog-close-button svg,
-.voice-indicator svg {
+.voice-indicator svg,
+.distance-indicator svg {
   width: 19px;
   height: 19px;
   fill: none;
@@ -311,6 +314,30 @@ main {
 .voice-indicator[data-state="error"] {
   border-color: rgba(198, 71, 50, 0.4);
   color: var(--danger);
+}
+
+.distance-indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 1px solid #b9c7c2;
+  border-radius: 5px;
+  color: var(--accent-strong);
+  background: rgba(255, 255, 255, 0.92);
+  font-size: 10px;
+  font-weight: 800;
+  pointer-events: none;
+}
+
+.distance-indicator svg {
+  width: 14px;
+  height: 14px;
 }
 
 .stage::before,
@@ -617,7 +644,16 @@ input[type="range"] {
   color: var(--danger);
 }
 
-.voice-train-button {
+#distanceStatus[data-state="ready"] {
+  color: var(--accent-strong);
+}
+
+#distanceStatus[data-state="error"] {
+  color: var(--danger);
+}
+
+.voice-train-button,
+.distance-calibrate-button {
   width: 100%;
   min-height: 38px;
   display: inline-flex;
@@ -635,12 +671,14 @@ input[type="range"] {
   cursor: pointer;
 }
 
-.voice-train-button:hover:not(:disabled) {
+.voice-train-button:hover:not(:disabled),
+.distance-calibrate-button:hover:not(:disabled) {
   border-color: var(--accent);
   background: #f7fbfa;
 }
 
-.voice-train-button:disabled {
+.voice-train-button:disabled,
+.distance-calibrate-button:disabled {
   cursor: not-allowed;
   opacity: 0.55;
 }
@@ -771,6 +809,7 @@ footer {
 }
 
 .calibration-dialog,
+.distance-dialog,
 .voice-dialog {
   width: min(520px, calc(100% - 28px));
   max-height: calc(100dvh - 28px);
@@ -784,11 +823,13 @@ footer {
 }
 
 .calibration-dialog::backdrop,
+.distance-dialog::backdrop,
 .voice-dialog::backdrop {
   background: rgba(18, 24, 22, 0.62);
 }
 
 .calibration-card,
+.distance-card,
 .voice-training-card {
   padding: clamp(24px, 5vw, 38px);
 }
@@ -800,11 +841,13 @@ footer {
   letter-spacing: 0;
 }
 
-.voice-dialog {
+.voice-dialog,
+.distance-dialog {
   width: min(560px, calc(100% - 28px));
 }
 
-.voice-dialog-header {
+.voice-dialog-header,
+.distance-dialog-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -826,6 +869,147 @@ footer {
 
 .dialog-close-button:disabled {
   cursor: wait;
+  opacity: 0.5;
+}
+
+.distance-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  margin-top: 20px;
+  overflow: hidden;
+  border: 1px solid #aeb9b4;
+  border-radius: 6px;
+  background: #161b19;
+}
+
+.distance-preview video,
+.distance-preview > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: scaleX(-1);
+}
+
+.distance-preview video {
+  object-fit: cover;
+}
+
+.distance-preview > svg {
+  overflow: visible;
+}
+
+.face-guide {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.78);
+  stroke-width: 3;
+  stroke-dasharray: 10 8;
+}
+
+.eye-point {
+  fill: var(--warm);
+  stroke: #161b19;
+  stroke-width: 2;
+}
+
+.eye-line {
+  fill: none;
+  stroke: var(--warm);
+  stroke-width: 3;
+  stroke-linecap: round;
+}
+
+.camera-privacy-note {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 9px;
+  border-radius: 4px;
+  color: #fff;
+  background: rgba(14, 19, 17, 0.72);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.camera-privacy-note svg {
+  width: 14px;
+  height: 14px;
+}
+
+.distance-result {
+  min-height: 178px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 3px;
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid #9fc3b9;
+  border-radius: 6px;
+  background: #f2f8f6;
+  text-align: center;
+}
+
+.distance-result[data-state="warning"] {
+  border-color: #d9b568;
+  background: #fff9ea;
+}
+
+.distance-result > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.distance-result strong {
+  color: var(--accent-strong);
+  font-size: 42px;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+.distance-result[data-state="warning"] strong {
+  color: #7a5716;
+}
+
+.distance-result p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.distance-status {
+  min-height: 20px;
+  margin: 11px 0 0;
+  color: var(--muted);
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.distance-status[data-state="error"] {
+  color: var(--danger);
+}
+
+.distance-dialog-actions {
+  grid-template-columns: 1fr auto;
+  margin-top: 14px;
+}
+
+.distance-dialog-actions .text-button {
+  grid-column: 1 / -1;
+}
+
+.distance-dialog-actions button:disabled {
+  cursor: not-allowed;
   opacity: 0.5;
 }
 
@@ -1219,6 +1403,7 @@ footer {
   }
 
   .calibration-card,
+  .distance-card,
   .voice-training-card {
     padding: 24px 18px 20px;
   }
@@ -1236,6 +1421,14 @@ footer {
   }
 
   .voice-dialog-actions .text-button {
+    grid-column: auto;
+  }
+
+  .distance-dialog-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .distance-dialog-actions .text-button {
     grid-column: auto;
   }
 

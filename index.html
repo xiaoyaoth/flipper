@@ -26,7 +26,7 @@
       sizes="192x192"
       href="./icons/icon-192.png"
     />
-    <link rel="stylesheet" href="./styles.css?v=20261008-16" />
+    <link rel="stylesheet" href="./styles.css?v=20261008-17" />
   </head>
   <body>
     <div class="app-shell">
@@ -103,6 +103,13 @@
                 <path d="M5 11a7 7 0 0 0 14 0M12 18v3M8 21h8" />
               </svg>
               <span id="voiceIndicatorText">正在听</span>
+            </div>
+            <div class="distance-indicator" id="distanceIndicator" hidden>
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4" />
+                <path d="M8 12h8M9.5 9.5 7 12l2.5 2.5M14.5 9.5 17 12l-2.5 2.5" />
+              </svg>
+              <span id="distanceIndicatorText">本轮约 40 cm</span>
             </div>
             <div class="target-wrap" id="targetWrap">
               <svg
@@ -207,6 +214,34 @@
                 <span aria-hidden="true"></span>
               </label>
             </div>
+          </div>
+
+          <div class="setting-group distance-setting">
+            <div class="switch-row">
+              <div>
+                <span class="setting-label">训练前测距</span>
+                <small id="distanceStatus" aria-live="polite">首次使用需在 40 cm 标定</small>
+              </div>
+              <label class="switch">
+                <input
+                  id="distanceToggle"
+                  type="checkbox"
+                  aria-label="训练前测距"
+                />
+                <span aria-hidden="true"></span>
+              </label>
+            </div>
+            <button
+              class="distance-calibrate-button"
+              id="openDistanceCalibrationButton"
+              type="button"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4" />
+                <path d="M8 12h8M9.5 9.5 7 12l2.5 2.5M14.5 9.5 17 12l-2.5 2.5" />
+              </svg>
+              <span>标定 40 cm 参考距离</span>
+            </button>
           </div>
 
           <div class="setting-group voice-setting">
@@ -355,6 +390,95 @@
       </form>
     </dialog>
 
+    <dialog class="distance-dialog" id="distanceDialog">
+      <div class="distance-card">
+        <div class="distance-dialog-header">
+          <div class="dialog-heading">
+            <span class="step-label">前置摄像头</span>
+            <h2 id="distanceDialogTitle">训练前估计视距</h2>
+            <p id="distanceDialogDescription">
+              请正对屏幕并保持不动，图像仅在本机处理。
+            </p>
+          </div>
+          <button
+            class="dialog-close-button"
+            id="closeDistanceDialogButton"
+            type="button"
+            aria-label="关闭"
+            title="关闭"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m6 6 12 12M18 6 6 18" />
+            </svg>
+          </button>
+        </div>
+
+        <div class="distance-preview" id="distancePreview">
+          <video
+            id="distanceVideo"
+            autoplay
+            muted
+            playsinline
+            aria-label="前置摄像头预览"
+          ></video>
+          <svg
+            id="distanceLandmarkOverlay"
+            viewBox="0 0 640 480"
+            preserveAspectRatio="xMidYMid slice"
+            aria-hidden="true"
+          >
+            <ellipse class="face-guide" cx="320" cy="232" rx="126" ry="165"></ellipse>
+            <circle class="eye-point" id="distanceEyePointA" cx="-20" cy="-20" r="6"></circle>
+            <circle class="eye-point" id="distanceEyePointB" cx="-20" cy="-20" r="6"></circle>
+            <path class="eye-line" id="distanceEyeLine" d=""></path>
+          </svg>
+          <div class="camera-privacy-note">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M14.5 7 16 5h3l1.5 2H22v11H2V7h12.5Z" />
+              <circle cx="12" cy="12.5" r="3.5" />
+            </svg>
+            <span>画面不保存、不上传</span>
+          </div>
+        </div>
+
+        <div class="distance-result" id="distanceResult" hidden>
+          <span>本次估计</span>
+          <strong><span id="distanceValue">40</span> cm</strong>
+          <p id="distanceAdvice">距离合适，可以开始训练。</p>
+        </div>
+
+        <p class="distance-status" id="distanceMeasureStatus" aria-live="polite">
+          正在准备摄像头…
+        </p>
+
+        <div class="dialog-actions distance-dialog-actions">
+          <button
+            class="primary-button"
+            id="distanceActionButton"
+            type="button"
+            disabled
+          >
+            正在准备
+          </button>
+          <button
+            class="secondary-button"
+            id="retryDistanceButton"
+            type="button"
+            hidden
+          >
+            重新测量
+          </button>
+          <button
+            class="text-button"
+            id="cancelDistanceButton"
+            type="button"
+          >
+            取消
+          </button>
+        </div>
+      </div>
+    </dialog>
+
     <dialog class="voice-dialog" id="voiceTrainingDialog">
       <div class="voice-training-card">
         <div class="voice-dialog-header">
@@ -431,9 +555,11 @@
       </div>
     </dialog>
 
-    <script src="./vendor/tensorflow/tf.min.js?v=20261008-16"></script>
-    <script src="./vendor/tensorflow/speech-commands.min.js?v=20261008-16"></script>
-    <script src="./voice-control.js?v=20261008-16"></script>
-    <script src="./app.js?v=20261008-16"></script>
+    <script src="./vendor/tensorflow/tf.min.js?v=20261008-17"></script>
+    <script src="./vendor/tensorflow/speech-commands.min.js?v=20261008-17"></script>
+    <script src="./vendor/blazeface/blazeface.min.js?v=20261008-17"></script>
+    <script src="./distance-control.js?v=20261008-17"></script>
+    <script src="./voice-control.js?v=20261008-17"></script>
+    <script src="./app.js?v=20261008-17"></script>
   </body>
 </html>
