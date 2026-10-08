@@ -26,7 +26,7 @@
       sizes="192x192"
       href="./icons/icon-192.png"
     />
-    <link rel="stylesheet" href="./styles.css?v=20261008-11" />
+    <link rel="stylesheet" href="./styles.css?v=20261008-3" />
   </head>
   <body>
     <div class="app-shell">
@@ -84,6 +84,10 @@
               <span class="metric-label">完成</span>
               <strong id="correctValue">0</strong>
             </div>
+            <div class="metric">
+              <span class="metric-label">失误</span>
+              <strong id="errorValue">0</strong>
+            </div>
             <div class="metric metric-wide">
               <span class="metric-label">节奏</span>
               <strong id="paceValue">--</strong>
@@ -93,10 +97,6 @@
 
           <div class="stage" id="stage">
             <div class="stage-caption" id="stageCaption">准备开始</div>
-            <div class="focus-countdown" aria-label="训练剩余时间">
-              <span>剩余</span>
-              <strong id="focusTimeValue">01:00</strong>
-            </div>
             <div class="target-wrap" id="targetWrap">
               <svg
                 class="optotype"
@@ -316,6 +316,6 @@
       </form>
     </dialog>
 
-    <script src="./app.js?v=20261008-11"></script>
+    <script src="./app.js?v=20261008-3"></script>
   </body>
 </html>

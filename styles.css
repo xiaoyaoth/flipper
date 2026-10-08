@@ -28,7 +28,6 @@
 html {
   min-width: 320px;
   background: var(--canvas);
-  touch-action: manipulation;
 }
 
 body {
@@ -42,19 +41,11 @@ body {
     linear-gradient(90deg, #e6ebe8 1px, transparent 1px),
     var(--canvas);
   background-size: 32px 32px;
-  touch-action: manipulation;
 }
 
 button,
 input {
   font: inherit;
-}
-
-button,
-a,
-input,
-select {
-  touch-action: manipulation;
 }
 
 button {
@@ -223,7 +214,7 @@ main {
 
 .session-metrics {
   display: grid;
-  grid-template-columns: repeat(3, minmax(74px, 1fr));
+  grid-template-columns: repeat(4, minmax(74px, 1fr));
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
@@ -305,10 +296,6 @@ main {
   background: rgba(255, 255, 255, 0.82);
   font-size: 11px;
   font-weight: 700;
-}
-
-.focus-countdown {
-  display: none;
 }
 
 .target-wrap {
@@ -913,7 +900,7 @@ footer {
   }
 
   .session-metrics {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
   }
 
   .metric {
@@ -924,7 +911,7 @@ footer {
     padding-left: 10px;
   }
 
-  .metric:nth-child(2) {
+  .metric:nth-child(3) {
     border-right: 0;
   }
 
@@ -1079,36 +1066,6 @@ body.is-session-active .stage {
   min-height: 0;
 }
 
-body.is-session-active .focus-countdown {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  z-index: 2;
-  width: 88px;
-  min-height: 38px;
-  display: grid;
-  align-content: start;
-  justify-items: center;
-  gap: 1px;
-  transform: translateX(-50%);
-  font-variant-numeric: tabular-nums;
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-body.is-session-active .focus-countdown span {
-  color: var(--muted);
-  font-size: 9px;
-  font-weight: 600;
-}
-
-body.is-session-active .focus-countdown strong {
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1.1;
-  font-weight: 700;
-}
-
 body.is-session-active .stage::before,
 body.is-session-active .stage::after {
   display: none;
@@ -1123,16 +1080,6 @@ body.is-session-active .stage.is-correct .optotype,
 body.is-session-active .stage.is-wrong .optotype {
   fill: var(--ink);
   animation: none;
-}
-
-body.is-session-active .stage.is-correct .focus-countdown span,
-body.is-session-active .stage.is-correct .focus-countdown strong {
-  color: var(--accent);
-}
-
-body.is-session-active .stage.is-wrong .focus-countdown span,
-body.is-session-active .stage.is-wrong .focus-countdown strong {
-  color: var(--danger);
 }
 
 body.is-session-active .answer-panel {
