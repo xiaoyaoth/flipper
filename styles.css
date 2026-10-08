@@ -223,7 +223,7 @@ main {
 
 .session-metrics {
   display: grid;
-  grid-template-columns: repeat(4, minmax(74px, 1fr));
+  grid-template-columns: repeat(3, minmax(74px, 1fr));
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
 }
@@ -913,7 +913,7 @@ footer {
   }
 
   .session-metrics {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
   }
 
   .metric {
@@ -924,7 +924,7 @@ footer {
     padding-left: 10px;
   }
 
-  .metric:nth-child(3) {
+  .metric:nth-child(2) {
     border-right: 0;
   }
 
@@ -1092,18 +1092,21 @@ body.is-session-active .focus-countdown {
   gap: 1px;
   transform: translateX(-50%);
   font-variant-numeric: tabular-nums;
+  opacity: 0.6;
   pointer-events: none;
 }
 
 body.is-session-active .focus-countdown span {
   color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 9px;
+  font-weight: 600;
 }
 
 body.is-session-active .focus-countdown strong {
-  font-size: 21px;
-  line-height: 1;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.1;
+  font-weight: 700;
 }
 
 body.is-session-active .stage::before,

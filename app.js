@@ -20,7 +20,6 @@ const elements = {
   timeValue: document.querySelector("#timeValue"),
   focusTimeValue: document.querySelector("#focusTimeValue"),
   correctValue: document.querySelector("#correctValue"),
-  errorValue: document.querySelector("#errorValue"),
   paceValue: document.querySelector("#paceValue"),
   snellenSelect: document.querySelector("#snellenSelect"),
   snellenSizeOutput: document.querySelector("#snellenSizeOutput"),
@@ -49,7 +48,6 @@ const state = {
   status: "idle",
   durationSeconds: 60,
   correctCount: 0,
-  errorCount: 0,
   currentDirection: "right",
   snellenDenominator: 40,
   soundEnabled: false,
@@ -153,7 +151,6 @@ function updateMetrics() {
   elements.timeValue.textContent = formattedRemainingTime;
   elements.focusTimeValue.textContent = formattedRemainingTime;
   elements.correctValue.textContent = String(state.correctCount);
-  elements.errorValue.textContent = String(state.errorCount);
   elements.paceValue.textContent =
     elapsedSeconds >= 3
       ? ((state.correctCount / elapsedSeconds) * 60).toFixed(1)
@@ -255,8 +252,7 @@ function answer(direction) {
     showFeedback("correct", "正确，翻转镜片");
     playSuccessTone();
   } else {
-    state.errorCount += 1;
-    showFeedback("wrong", "错误，已换新视标");
+    showFeedback("wrong", "已换新视标");
   }
 
   updateMetrics();
@@ -319,7 +315,6 @@ function resetSession() {
   state.status = "idle";
   setSessionFocusMode(false);
   state.correctCount = 0;
-  state.errorCount = 0;
   state.elapsedBeforeStart = 0;
   state.answerLocked = false;
   elements.stage.classList.add("is-idle");
