@@ -3,6 +3,7 @@ const SETTINGS_KEY = "clarity-flipper-settings-v1";
 const DEFAULT_PIXELS_PER_MM = 96 / 25.4;
 const SNELLEN_VIEWING_DISTANCE_MM = 400;
 const SNELLEN_DENOMINATORS = [20, 25, 30, 40, 50, 60, 80, 100];
+const ANSWER_FEEDBACK_DURATION_MS = 220;
 
 const directions = {
   up: { rotation: -90, label: "上" },
@@ -258,9 +259,10 @@ function answer(direction) {
   updateMetrics();
 
   window.setTimeout(() => {
+    clearFeedback();
     chooseNextDirection();
     state.answerLocked = false;
-  }, 120);
+  }, ANSWER_FEEDBACK_DURATION_MS);
 }
 
 function startSession() {

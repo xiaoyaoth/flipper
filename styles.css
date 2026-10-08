@@ -1119,9 +1119,13 @@ body.is-session-active .target-wrap {
   transition: none;
 }
 
-body.is-session-active .stage.is-correct .optotype,
+body.is-session-active .stage.is-correct .optotype {
+  fill: var(--accent);
+  animation: none;
+}
+
 body.is-session-active .stage.is-wrong .optotype {
-  fill: var(--ink);
+  fill: var(--danger);
   animation: none;
 }
 
