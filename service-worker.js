@@ -1,10 +1,10 @@
 const CACHE_PREFIX = "clarity-flipper-";
-const CACHE_NAME = `${CACHE_PREFIX}20261008-3`;
+const CACHE_NAME = `${CACHE_PREFIX}20261008-11`;
 const APP_SHELL = [
   "./",
   "./index.html",
-  "./styles.css?v=20261008-3",
-  "./app.js?v=20261008-3",
+  "./styles.css?v=20261008-11",
+  "./app.js?v=20261008-11",
   "./manifest.webmanifest",
   "./icons/apple-touch-icon.png",
   "./icons/icon-192.png",
@@ -12,8 +12,11 @@ const APP_SHELL = [
 ];
 
 self.addEventListener("install", (event) => {
+  const appShellRequests = APP_SHELL.map(
+    (url) => new Request(url, { cache: "reload" }),
+  );
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)),
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(appShellRequests)),
   );
   self.skipWaiting();
 });
@@ -43,7 +46,7 @@ self.addEventListener("fetch", (event) => {
 
   if (request.mode === "navigate") {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: "reload" })
         .then((response) => {
           if (!response.ok) {
             return response;

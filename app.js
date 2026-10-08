@@ -3,6 +3,7 @@ const SETTINGS_KEY = "clarity-flipper-settings-v1";
 const DEFAULT_PIXELS_PER_MM = 96 / 25.4;
 const SNELLEN_VIEWING_DISTANCE_MM = 400;
 const SNELLEN_DENOMINATORS = [20, 25, 30, 40, 50, 60, 80, 100];
+const ANSWER_FEEDBACK_DURATION_MS = 220;
 
 const directions = {
   up: { rotation: -90, label: "上" },
@@ -18,8 +19,8 @@ const elements = {
   optotype: document.querySelector("#optotype"),
   feedback: document.querySelector("#feedback"),
   timeValue: document.querySelector("#timeValue"),
+  focusTimeValue: document.querySelector("#focusTimeValue"),
   correctValue: document.querySelector("#correctValue"),
-  errorValue: document.querySelector("#errorValue"),
   paceValue: document.querySelector("#paceValue"),
   snellenSelect: document.querySelector("#snellenSelect"),
   snellenSizeOutput: document.querySelector("#snellenSizeOutput"),
@@ -48,7 +49,6 @@ const state = {
   status: "idle",
   durationSeconds: 60,
   correctCount: 0,
-  errorCount: 0,
   currentDirection: "right",
   snellenDenominator: 40,
   soundEnabled: false,
@@ -148,9 +148,10 @@ function getElapsedMilliseconds() {
 function updateMetrics() {
   const elapsedSeconds = getElapsedMilliseconds() / 1000;
   const remainingSeconds = state.durationSeconds - elapsedSeconds;
-  elements.timeValue.textContent = formatTime(remainingSeconds);
+  const formattedRemainingTime = formatTime(remainingSeconds);
+  elements.timeValue.textContent = formattedRemainingTime;
+  elements.focusTimeValue.textContent = formattedRemainingTime;
   elements.correctValue.textContent = String(state.correctCount);
-  elements.errorValue.textContent = String(state.errorCount);
   elements.paceValue.textContent =
     elapsedSeconds >= 3
       ? ((state.correctCount / elapsedSeconds) * 60).toFixed(1)
@@ -245,23 +246,23 @@ function answer(direction) {
     return;
   }
 
+  state.answerLocked = true;
+
   if (direction === state.currentDirection) {
-    state.answerLocked = true;
     state.correctCount += 1;
     showFeedback("correct", "正确，翻转镜片");
     playSuccessTone();
-    updateMetrics();
-
-    window.setTimeout(() => {
-      chooseNextDirection();
-      state.answerLocked = false;
-    }, 120);
-    return;
+  } else {
+    showFeedback("wrong", "已换新视标");
   }
 
-  state.errorCount += 1;
-  showFeedback("wrong", "再看一次");
   updateMetrics();
+
+  window.setTimeout(() => {
+    clearFeedback();
+    chooseNextDirection();
+    state.answerLocked = false;
+  }, ANSWER_FEEDBACK_DURATION_MS);
 }
 
 function startSession() {
@@ -316,7 +317,6 @@ function resetSession() {
   state.status = "idle";
   setSessionFocusMode(false);
   state.correctCount = 0;
-  state.errorCount = 0;
   state.elapsedBeforeStart = 0;
   state.answerLocked = false;
   elements.stage.classList.add("is-idle");
