@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="支持物理尺寸校准的反转拍视标训练工具"
+    />
+    <meta name="theme-color" content="#f4f6f3" />
+    <title>清晰拍 · 反转拍练习</title>
+    <link rel="stylesheet" href="./styles.css?v=20261008-2" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="#" aria-label="清晰拍首页">
+          <span class="brand-mark" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </span>
+          <span class="brand-copy">
+            <strong>清晰拍</strong>
+            <small>调节灵敏度训练</small>
+          </span>
+        </a>
+
+        <div class="topbar-actions">
+          <span class="calibration-state" id="calibrationState">
+            <span class="state-dot"></span>
+            <span>未校准</span>
+          </span>
+          <button
+            class="icon-button"
+            id="fullscreenButton"
+            type="button"
+            aria-label="进入全屏"
+            title="全屏"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5" />
+            </svg>
+          </button>
+          <button
+            class="icon-button"
+            id="openCalibrationButton"
+            type="button"
+            aria-label="重新校准"
+            title="尺寸校准"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16M7 4v6M11 4v3M15 4v3M19 4v6M4 17h16M7 14v6M11 17v3M15 17v3M19 14v6" />
+            </svg>
+          </button>
+        </div>
+      </header>
+
+      <main>
+        <section class="training-band" aria-labelledby="trainingTitle">
+          <h1 id="trainingTitle">反转拍练习</h1>
+
+          <div class="session-metrics" aria-label="训练数据">
+            <div class="metric">
+              <span class="metric-label">剩余</span>
+              <strong id="timeValue">01:00</strong>
+            </div>
+            <div class="metric">
+              <span class="metric-label">完成</span>
+              <strong id="correctValue">0</strong>
+            </div>
+            <div class="metric">
+              <span class="metric-label">失误</span>
+              <strong id="errorValue">0</strong>
+            </div>
+            <div class="metric metric-wide">
+              <span class="metric-label">节奏</span>
+              <strong id="paceValue">--</strong>
+              <small>次/分</small>
+            </div>
+          </div>
+
+          <div class="stage" id="stage">
+            <div class="stage-caption" id="stageCaption">准备开始</div>
+            <div class="target-wrap" id="targetWrap">
+              <svg
+                class="optotype"
+                id="optotype"
+                viewBox="0 0 100 100"
+                role="img"
+                aria-label="朝右的视标"
+              >
+                <path d="M0 0H100V20H20V40H100V60H20V80H100V100H0Z" />
+              </svg>
+            </div>
+            <div class="feedback" id="feedback" aria-live="polite"></div>
+          </div>
+
+          <div class="answer-panel">
+            <p class="answer-label">看清后选择开口方向</p>
+            <div class="direction-pad" aria-label="方向选择">
+              <button class="direction-button" data-direction="up" type="button">
+                <span aria-hidden="true">↑</span>
+                <small>上</small>
+              </button>
+              <button class="direction-button" data-direction="right" type="button">
+                <span aria-hidden="true">→</span>
+                <small>右</small>
+              </button>
+              <button class="direction-button" data-direction="down" type="button">
+                <span aria-hidden="true">↓</span>
+                <small>下</small>
+              </button>
+              <button class="direction-button" data-direction="left" type="button">
+                <span aria-hidden="true">←</span>
+                <small>左</small>
+              </button>
+            </div>
+          </div>
+
+          <div class="session-actions">
+            <button class="primary-button" id="startButton" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="m9 7 8 5-8 5Z" />
+              </svg>
+              <span>开始训练</span>
+            </button>
+            <button class="secondary-button" id="resetButton" type="button">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 12a8 8 0 1 0 2.3-5.7L4 8.6M4 4v4.6h4.6" />
+              </svg>
+              <span>重置</span>
+            </button>
+          </div>
+        </section>
+
+        <aside class="control-panel" aria-label="训练设置">
+          <div class="panel-heading">
+            <div>
+              <span class="eyebrow">本轮设置</span>
+              <h2>训练参数</h2>
+            </div>
+            <span class="physical-size" id="physicalSizeLabel">20/40</span>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-heading">
+              <label for="snellenSelect">Snellen 级别</label>
+              <output id="snellenSizeOutput" for="snellenSelect">1.16 mm</output>
+            </div>
+            <select class="setting-select" id="snellenSelect">
+              <option value="20">20/20</option>
+              <option value="25">20/25</option>
+              <option value="30">20/30</option>
+              <option value="40" selected>20/40</option>
+              <option value="50">20/50</option>
+              <option value="60">20/60</option>
+              <option value="80">20/80</option>
+              <option value="100">20/100</option>
+            </select>
+            <p class="setting-help">按 40 cm 训练距离换算视标高度</p>
+          </div>
+
+          <div class="setting-group">
+            <span class="setting-label">训练时长</span>
+            <div class="segmented-control" id="durationControl">
+              <button class="segment is-active" data-duration="60" type="button">1 分钟</button>
+              <button class="segment" data-duration="120" type="button">2 分钟</button>
+              <button class="segment" data-duration="180" type="button">3 分钟</button>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="switch-row">
+              <div>
+                <span class="setting-label">答对提示音</span>
+                <small>每次识别后给出声音反馈</small>
+              </div>
+              <label class="switch">
+                <input id="soundToggle" type="checkbox" />
+                <span aria-hidden="true"></span>
+              </label>
+            </div>
+          </div>
+
+          <p class="safety-note">
+            保持约 40 cm 视距。出现眼痛、眩晕或持续模糊时请停止训练。
+          </p>
+        </aside>
+      </main>
+
+      <footer>
+        <span>设备校准后，Snellen 视标按 40 cm 视距显示</span>
+        <span class="shortcut-hint">键盘可使用方向键作答</span>
+      </footer>
+    </div>
+
+    <dialog class="calibration-dialog" id="calibrationDialog">
+      <form method="dialog" class="calibration-card" id="calibrationForm">
+        <div class="dialog-heading">
+          <span class="step-label">设备校准</span>
+          <h2>用直尺测量线段</h2>
+          <p>分别测量每条黑线两端刻度之间的长度，并填写实际毫米数。</p>
+        </div>
+
+        <div class="calibration-samples">
+          <div class="calibration-sample">
+            <div class="sample-heading">
+              <span>线段 A</span>
+              <label>
+                实测
+                <span class="measurement-input">
+                  <input
+                    class="calibration-measurement"
+                    data-pixels="100"
+                    type="number"
+                    min="1"
+                    max="120"
+                    step="0.1"
+                    inputmode="decimal"
+                    required
+                    aria-label="线段 A 实测长度"
+                  />
+                  <span>mm</span>
+                </span>
+              </label>
+            </div>
+            <div class="sample-line-track" aria-hidden="true">
+              <span class="sample-line" style="--sample-width: 100px"></span>
+            </div>
+          </div>
+
+          <div class="calibration-sample">
+            <div class="sample-heading">
+              <span>线段 B</span>
+              <label>
+                实测
+                <span class="measurement-input">
+                  <input
+                    class="calibration-measurement"
+                    data-pixels="160"
+                    type="number"
+                    min="1"
+                    max="120"
+                    step="0.1"
+                    inputmode="decimal"
+                    required
+                    aria-label="线段 B 实测长度"
+                  />
+                  <span>mm</span>
+                </span>
+              </label>
+            </div>
+            <div class="sample-line-track" aria-hidden="true">
+              <span class="sample-line" style="--sample-width: 160px"></span>
+            </div>
+          </div>
+
+          <div class="calibration-sample">
+            <div class="sample-heading">
+              <span>线段 C</span>
+              <label>
+                实测
+                <span class="measurement-input">
+                  <input
+                    class="calibration-measurement"
+                    data-pixels="220"
+                    type="number"
+                    min="1"
+                    max="120"
+                    step="0.1"
+                    inputmode="decimal"
+                    required
+                    aria-label="线段 C 实测长度"
+                  />
+                  <span>mm</span>
+                </span>
+              </label>
+            </div>
+            <div class="sample-line-track" aria-hidden="true">
+              <span class="sample-line" style="--sample-width: 220px"></span>
+            </div>
+          </div>
+        </div>
+
+        <p class="calibration-error" id="calibrationError" role="alert"></p>
+
+        <div class="dialog-actions">
+          <button class="primary-button" id="saveCalibrationButton" value="confirm">
+            保存校准
+          </button>
+          <button
+            class="text-button"
+            id="cancelCalibrationButton"
+            value="cancel"
+            formnovalidate
+          >
+            稍后校准
+          </button>
+        </div>
+      </form>
+    </dialog>
+
+    <script src="./app.js?v=20261008-2"></script>
+  </body>
+</html>
