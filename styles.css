@@ -28,6 +28,7 @@
 html {
   min-width: 320px;
   background: var(--canvas);
+  touch-action: manipulation;
 }
 
 body {
@@ -41,11 +42,19 @@ body {
     linear-gradient(90deg, #e6ebe8 1px, transparent 1px),
     var(--canvas);
   background-size: 32px 32px;
+  touch-action: manipulation;
 }
 
 button,
 input {
   font: inherit;
+}
+
+button,
+a,
+input,
+select {
+  touch-action: manipulation;
 }
 
 button {
@@ -296,6 +305,10 @@ main {
   background: rgba(255, 255, 255, 0.82);
   font-size: 11px;
   font-weight: 700;
+}
+
+.focus-countdown {
+  display: none;
 }
 
 .target-wrap {
@@ -1064,6 +1077,33 @@ body.is-session-active .training-band {
 
 body.is-session-active .stage {
   min-height: 0;
+}
+
+body.is-session-active .focus-countdown {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  z-index: 2;
+  width: 88px;
+  min-height: 38px;
+  display: grid;
+  align-content: start;
+  justify-items: center;
+  gap: 1px;
+  transform: translateX(-50%);
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+body.is-session-active .focus-countdown span {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+body.is-session-active .focus-countdown strong {
+  font-size: 21px;
+  line-height: 1;
 }
 
 body.is-session-active .stage::before,

@@ -18,6 +18,7 @@ const elements = {
   optotype: document.querySelector("#optotype"),
   feedback: document.querySelector("#feedback"),
   timeValue: document.querySelector("#timeValue"),
+  focusTimeValue: document.querySelector("#focusTimeValue"),
   correctValue: document.querySelector("#correctValue"),
   errorValue: document.querySelector("#errorValue"),
   paceValue: document.querySelector("#paceValue"),
@@ -148,7 +149,9 @@ function getElapsedMilliseconds() {
 function updateMetrics() {
   const elapsedSeconds = getElapsedMilliseconds() / 1000;
   const remainingSeconds = state.durationSeconds - elapsedSeconds;
-  elements.timeValue.textContent = formatTime(remainingSeconds);
+  const formattedRemainingTime = formatTime(remainingSeconds);
+  elements.timeValue.textContent = formattedRemainingTime;
+  elements.focusTimeValue.textContent = formattedRemainingTime;
   elements.correctValue.textContent = String(state.correctCount);
   elements.errorValue.textContent = String(state.errorCount);
   elements.paceValue.textContent =
@@ -245,23 +248,23 @@ function answer(direction) {
     return;
   }
 
+  state.answerLocked = true;
+
   if (direction === state.currentDirection) {
-    state.answerLocked = true;
     state.correctCount += 1;
     showFeedback("correct", "正确，翻转镜片");
     playSuccessTone();
-    updateMetrics();
-
-    window.setTimeout(() => {
-      chooseNextDirection();
-      state.answerLocked = false;
-    }, 120);
-    return;
+  } else {
+    state.errorCount += 1;
+    showFeedback("wrong", "错误，已换新视标");
   }
 
-  state.errorCount += 1;
-  showFeedback("wrong", "再看一次");
   updateMetrics();
+
+  window.setTimeout(() => {
+    chooseNextDirection();
+    state.answerLocked = false;
+  }, 120);
 }
 
 function startSession() {
