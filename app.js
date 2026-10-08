@@ -219,17 +219,23 @@ function chooseNextDirection() {
 
 function clearFeedback() {
   window.clearTimeout(state.feedbackTimerId);
+  state.feedbackTimerId = null;
   elements.feedback.textContent = "";
   elements.feedback.className = "feedback";
   elements.stage.classList.remove("is-correct", "is-wrong");
+  elements.directionButtons.forEach((button) => {
+    button.classList.remove("is-correct", "is-wrong");
+  });
 }
 
-function showFeedback(type, message) {
+function showFeedback(type, message, direction) {
   clearFeedback();
   elements.feedback.textContent = message;
   elements.feedback.classList.add(`is-${type}`);
-  elements.stage.classList.add(`is-${type}`);
-  state.feedbackTimerId = window.setTimeout(clearFeedback, 500);
+  const selectedButton = elements.directionButtons.find(
+    (button) => button.dataset.direction === direction,
+  );
+  selectedButton.classList.add(`is-${type}`);
 }
 
 function playSuccessTone() {
@@ -266,15 +272,15 @@ function answer(direction) {
 
   if (direction === state.currentDirection) {
     state.correctCount += 1;
-    showFeedback("correct", "正确，翻转镜片");
+    showFeedback("correct", "正确", direction);
     playSuccessTone();
   } else {
-    showFeedback("wrong", "已换新视标");
+    showFeedback("wrong", "错误", direction);
   }
 
   updateMetrics();
 
-  window.setTimeout(() => {
+  state.feedbackTimerId = window.setTimeout(() => {
     clearFeedback();
     chooseNextDirection();
     state.answerLocked = false;

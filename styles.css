@@ -334,30 +334,6 @@ main {
   opacity: 0.25;
 }
 
-.stage.is-correct .optotype {
-  fill: var(--accent);
-}
-
-.stage.is-wrong .optotype {
-  fill: var(--danger);
-  animation: target-shake 180ms ease;
-}
-
-@keyframes target-shake {
-  0%,
-  100% {
-    translate: 0;
-  }
-
-  35% {
-    translate: -5px;
-  }
-
-  70% {
-    translate: 5px;
-  }
-}
-
 .feedback {
   position: absolute;
   bottom: 23px;
@@ -409,10 +385,7 @@ main {
   border-radius: 6px;
   background: var(--surface);
   cursor: pointer;
-  transition:
-    transform 100ms ease,
-    border-color 150ms ease,
-    background 150ms ease;
+  transition: transform 100ms ease;
 }
 
 .direction-button:hover:not(:disabled) {
@@ -422,6 +395,25 @@ main {
 
 .direction-button:active:not(:disabled) {
   transform: translateY(1px);
+}
+
+.direction-button.is-correct:not(:disabled),
+.direction-button.is-correct:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: #fff;
+  background: var(--accent);
+}
+
+.direction-button.is-wrong:not(:disabled),
+.direction-button.is-wrong:hover:not(:disabled) {
+  border-color: var(--danger);
+  color: #fff;
+  background: var(--danger);
+}
+
+.direction-button.is-correct small,
+.direction-button.is-wrong small {
+  color: inherit;
 }
 
 .direction-button:disabled {
@@ -1118,22 +1110,6 @@ body.is-session-active .stage::after {
 body.is-session-active .target-wrap {
   opacity: 1;
   transition: none;
-}
-
-body.is-session-active .stage.is-correct .optotype,
-body.is-session-active .stage.is-wrong .optotype {
-  fill: var(--ink);
-  animation: none;
-}
-
-body.is-session-active .stage.is-correct .focus-countdown span,
-body.is-session-active .stage.is-correct .focus-countdown strong {
-  color: var(--accent);
-}
-
-body.is-session-active .stage.is-wrong .focus-countdown span,
-body.is-session-active .stage.is-wrong .focus-countdown strong {
-  color: var(--danger);
 }
 
 body.is-session-active .answer-panel {
