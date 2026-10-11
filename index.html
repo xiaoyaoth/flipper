@@ -26,7 +26,7 @@
       sizes="192x192"
       href="./icons/icon-192.png"
     />
-    <link rel="stylesheet" href="./styles.css?v=20261011-1" />
+    <link rel="stylesheet" href="./styles.css?v=20261011-2" />
   </head>
   <body>
     <div class="app-shell">
@@ -78,11 +78,11 @@
           <div class="session-metrics" aria-label="训练数据">
             <div class="metric">
               <span class="metric-label">剩余</span>
-              <strong id="timeValue">01:00</strong>
+              <strong id="timeValue">03:00</strong>
             </div>
             <div class="metric">
-              <span class="metric-label">完成</span>
-              <strong id="correctValue">0</strong>
+              <span class="metric-label">翻转</span>
+              <strong id="flipValue">0</strong>
             </div>
             <div class="metric metric-wide">
               <span class="metric-label">节奏</span>
@@ -94,8 +94,11 @@
           <div class="stage" id="stage">
             <div class="stage-caption" id="stageCaption">准备开始</div>
             <div class="focus-countdown" aria-label="训练剩余时间">
+              <span class="focus-round-label" id="focusRoundLabel">
+                左眼 · 第 1/3 轮
+              </span>
               <span>剩余</span>
-              <strong id="focusTimeValue">01:00</strong>
+              <strong id="focusTimeValue">03:00</strong>
             </div>
             <div class="target-wrap" id="targetWrap">
               <svg
@@ -177,11 +180,11 @@
           </div>
 
           <div class="setting-group">
-            <span class="setting-label">训练时长</span>
+            <span class="setting-label">每轮时长</span>
             <div class="segmented-control" id="durationControl">
-              <button class="segment is-active" data-duration="60" type="button">1 分钟</button>
+              <button class="segment" data-duration="60" type="button">1 分钟</button>
               <button class="segment" data-duration="120" type="button">2 分钟</button>
-              <button class="segment" data-duration="180" type="button">3 分钟</button>
+              <button class="segment is-active" data-duration="180" type="button">3 分钟</button>
             </div>
           </div>
 
@@ -201,6 +204,17 @@
               </label>
             </div>
           </div>
+
+          <section class="training-history" aria-labelledby="historyTitle">
+            <div class="history-heading">
+              <h3 id="historyTitle">训练记录</h3>
+              <span>最近 10 次</span>
+            </div>
+            <p class="history-empty" id="historyEmpty">
+              完成左眼、右眼和双眼训练后显示记录
+            </p>
+            <ol class="history-list" id="historyList"></ol>
+          </section>
 
           <p class="safety-note">
             保持约 40 cm 视距。出现眼痛、眩晕或持续模糊时请停止训练。
@@ -320,6 +334,6 @@
       </form>
     </dialog>
 
-    <script src="./app.js?v=20261011-1"></script>
+    <script src="./app.js?v=20261011-2"></script>
   </body>
 </html>

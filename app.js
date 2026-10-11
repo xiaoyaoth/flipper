@@ -1,10 +1,17 @@
 const CALIBRATION_KEY = "clarity-flipper-calibration-v2";
 const SETTINGS_KEY = "clarity-flipper-settings-v1";
+const TRAINING_HISTORY_KEY = "clarity-flipper-history-v1";
 const DEFAULT_PIXELS_PER_MM = 96 / 25.4;
 const SNELLEN_VIEWING_DISTANCE_MM = 400;
 const SNELLEN_DENOMINATORS = [20, 25, 30, 40, 50, 60, 80, 100];
 const OPTOTYPE_GRID_UNITS = 5;
 const ANSWER_FEEDBACK_DURATION_MS = 220;
+const MAX_HISTORY_RECORDS = 10;
+const TRAINING_ROUNDS = [
+  { id: "left", label: "左眼" },
+  { id: "right", label: "右眼" },
+  { id: "both", label: "双眼" },
+];
 
 const directions = {
   up: { rotation: -90, label: "上" },
@@ -21,7 +28,8 @@ const elements = {
   feedback: document.querySelector("#feedback"),
   timeValue: document.querySelector("#timeValue"),
   focusTimeValue: document.querySelector("#focusTimeValue"),
-  correctValue: document.querySelector("#correctValue"),
+  focusRoundLabel: document.querySelector("#focusRoundLabel"),
+  flipValue: document.querySelector("#flipValue"),
   paceValue: document.querySelector("#paceValue"),
   snellenSelect: document.querySelector("#snellenSelect"),
   snellenSizeOutput: document.querySelector("#snellenSizeOutput"),
@@ -44,12 +52,15 @@ const elements = {
   ],
   calibrationError: document.querySelector("#calibrationError"),
   cancelCalibrationButton: document.querySelector("#cancelCalibrationButton"),
+  historyList: document.querySelector("#historyList"),
+  historyEmpty: document.querySelector("#historyEmpty"),
 };
 
 const state = {
   status: "idle",
-  durationSeconds: 60,
-  correctCount: 0,
+  durationSeconds: 180,
+  currentRoundIndex: 0,
+  roundFlips: TRAINING_ROUNDS.map(() => 0),
   currentDirection: "right",
   snellenDenominator: 40,
   soundEnabled: false,
@@ -58,6 +69,8 @@ const state = {
   timerId: null,
   feedbackTimerId: null,
   answerLocked: false,
+  completedRecordSaved: false,
+  trainingHistory: [],
   calibration: readJson(CALIBRATION_KEY),
 };
 
@@ -161,20 +174,33 @@ function getElapsedMilliseconds() {
   return state.elapsedBeforeStart;
 }
 
+function getCurrentRound() {
+  return TRAINING_ROUNDS[state.currentRoundIndex];
+}
+
+function getCurrentRoundFlips() {
+  return state.roundFlips[state.currentRoundIndex];
+}
+
+function getRoundProgressLabel() {
+  return `${getCurrentRound().label} · 第 ${state.currentRoundIndex + 1}/${TRAINING_ROUNDS.length} 轮`;
+}
+
 function updateMetrics() {
   const elapsedSeconds = getElapsedMilliseconds() / 1000;
   const remainingSeconds = state.durationSeconds - elapsedSeconds;
   const formattedRemainingTime = formatTime(remainingSeconds);
   elements.timeValue.textContent = formattedRemainingTime;
   elements.focusTimeValue.textContent = formattedRemainingTime;
-  elements.correctValue.textContent = String(state.correctCount);
+  elements.focusRoundLabel.textContent = getRoundProgressLabel();
+  elements.flipValue.textContent = String(getCurrentRoundFlips());
   elements.paceValue.textContent =
     elapsedSeconds >= 3
-      ? ((state.correctCount / elapsedSeconds) * 60).toFixed(1)
+      ? ((getCurrentRoundFlips() / elapsedSeconds) * 60).toFixed(1)
       : "--";
 
   if (remainingSeconds <= 0 && state.status === "running") {
-    completeSession();
+    completeRound();
   }
 }
 
@@ -198,8 +224,13 @@ function setStartButton(mode) {
     return;
   }
 
-  elements.startButtonLabel.textContent =
-    mode === "resume" ? "继续训练" : "开始训练";
+  const labels = {
+    resume: "继续训练",
+    next: `开始${TRAINING_ROUNDS[state.currentRoundIndex + 1]?.label || ""}`,
+    restart: "重新训练",
+    start: `开始${getCurrentRound().label}`,
+  };
+  elements.startButtonLabel.textContent = labels[mode] || labels.start;
   elements.startButtonIcon.setAttribute("d", "m9 7 8 5-8 5Z");
 }
 
@@ -232,10 +263,25 @@ function showFeedback(type, message, direction) {
   clearFeedback();
   elements.feedback.textContent = message;
   elements.feedback.classList.add(`is-${type}`);
+  elements.stage.classList.add(`is-${type}`);
   const selectedButton = elements.directionButtons.find(
     (button) => button.dataset.direction === direction,
   );
   selectedButton.classList.add(`is-${type}`);
+}
+
+function transitionToNextDirection() {
+  elements.targetWrap.classList.add("is-switching");
+  chooseNextDirection();
+
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      elements.targetWrap.classList.remove("is-switching");
+      if (state.status === "running") {
+        state.answerLocked = false;
+      }
+    });
+  });
 }
 
 function playSuccessTone() {
@@ -269,9 +315,9 @@ function answer(direction) {
   }
 
   state.answerLocked = true;
+  state.roundFlips[state.currentRoundIndex] += 1;
 
   if (direction === state.currentDirection) {
-    state.correctCount += 1;
     showFeedback("correct", "正确", direction);
     playSuccessTone();
   } else {
@@ -282,8 +328,7 @@ function answer(direction) {
 
   state.feedbackTimerId = window.setTimeout(() => {
     clearFeedback();
-    chooseNextDirection();
-    state.answerLocked = false;
+    transitionToNextDirection();
   }, ANSWER_FEEDBACK_DURATION_MS);
 }
 
@@ -297,9 +342,10 @@ function startSession() {
   state.startedAt = performance.now();
   setSessionFocusMode(true);
   elements.stage.classList.remove("is-idle", "is-complete");
-  elements.stageCaption.textContent = "训练进行中";
+  elements.stageCaption.textContent = getRoundProgressLabel();
   setControlsEnabled(true);
   setStartButton("pause");
+  window.clearInterval(state.timerId);
   state.timerId = window.setInterval(updateMetrics, 200);
   updateMetrics();
 }
@@ -309,23 +355,134 @@ function pauseSession() {
   state.status = "paused";
   setSessionFocusMode(false);
   window.clearInterval(state.timerId);
-  elements.stageCaption.textContent = "已暂停";
+  clearFeedback();
+  elements.targetWrap.classList.remove("is-switching");
+  state.answerLocked = false;
+  elements.stageCaption.textContent = `${getCurrentRound().label} · 已暂停`;
   setControlsEnabled(false);
   setStartButton("resume");
   updateMetrics();
 }
 
-function completeSession() {
+function getTotalFlips() {
+  return state.roundFlips.reduce((total, flips) => total + flips, 0);
+}
+
+function formatHistoryDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("zh-CN", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  }).format(date);
+}
+
+function renderHistory() {
+  elements.historyList.replaceChildren();
+  elements.historyEmpty.hidden = state.trainingHistory.length > 0;
+
+  state.trainingHistory.forEach((record) => {
+    const item = document.createElement("li");
+    item.className = "history-item";
+
+    const summary = document.createElement("div");
+    summary.className = "history-summary";
+
+    const date = document.createElement("time");
+    date.dateTime = record.completedAt;
+    date.textContent = formatHistoryDate(record.completedAt);
+
+    const total = document.createElement("strong");
+    total.textContent = `${record.totalFlips} 次`;
+
+    const details = document.createElement("p");
+    details.textContent = record.rounds
+      .map((round) => `${round.label} ${round.flips}`)
+      .join(" · ");
+
+    summary.append(date, total);
+    item.append(summary, details);
+    elements.historyList.append(item);
+  });
+}
+
+function loadTrainingHistory() {
+  const storedHistory = readJson(TRAINING_HISTORY_KEY);
+  state.trainingHistory = Array.isArray(storedHistory)
+    ? storedHistory
+        .filter(
+          (record) =>
+            record &&
+            typeof record.completedAt === "string" &&
+            Number.isFinite(record.totalFlips) &&
+            Array.isArray(record.rounds),
+        )
+        .slice(0, MAX_HISTORY_RECORDS)
+    : [];
+  renderHistory();
+}
+
+function saveCompletedTraining() {
+  if (state.completedRecordSaved) {
+    return;
+  }
+
+  const record = {
+    completedAt: new Date().toISOString(),
+    totalFlips: getTotalFlips(),
+    durationSeconds: state.durationSeconds,
+    snellenDenominator: state.snellenDenominator,
+    rounds: TRAINING_ROUNDS.map((round, index) => ({
+      id: round.id,
+      label: round.label,
+      flips: state.roundFlips[index],
+    })),
+  };
+  state.trainingHistory = [
+    record,
+    ...state.trainingHistory,
+  ].slice(0, MAX_HISTORY_RECORDS);
+  state.completedRecordSaved = true;
+  writeJson(TRAINING_HISTORY_KEY, state.trainingHistory);
+  renderHistory();
+}
+
+function completeRound() {
   state.elapsedBeforeStart = state.durationSeconds * 1000;
-  state.status = "complete";
   setSessionFocusMode(false);
   window.clearInterval(state.timerId);
+  clearFeedback();
+  elements.targetWrap.classList.remove("is-switching");
+  state.answerLocked = false;
   elements.stage.classList.add("is-complete");
-  elements.stageCaption.textContent = "本轮完成";
-  elements.feedback.textContent = `完成 ${state.correctCount} 次`;
-  elements.feedback.className = "feedback is-correct";
   setControlsEnabled(false);
-  setStartButton("start");
+
+  const currentRound = getCurrentRound();
+  const isLastRound = state.currentRoundIndex === TRAINING_ROUNDS.length - 1;
+  if (!isLastRound) {
+    const nextRound = TRAINING_ROUNDS[state.currentRoundIndex + 1];
+    state.status = "between-rounds";
+    elements.stageCaption.textContent = `${currentRound.label}完成`;
+    elements.feedback.textContent =
+      `本轮翻转 ${getCurrentRoundFlips()} 次，下一轮 ${nextRound.label}`;
+    elements.feedback.className = "feedback";
+    setStartButton("next");
+  } else {
+    state.status = "complete";
+    elements.stageCaption.textContent = "本次训练完成";
+    elements.feedback.textContent = `三轮共翻转 ${getTotalFlips()} 次`;
+    elements.feedback.className = "feedback is-correct";
+    setStartButton("restart");
+    saveCompletedTraining();
+  }
+
   updateMetrics();
 }
 
@@ -334,16 +491,29 @@ function resetSession() {
   clearFeedback();
   state.status = "idle";
   setSessionFocusMode(false);
-  state.correctCount = 0;
+  state.currentRoundIndex = 0;
+  state.roundFlips = TRAINING_ROUNDS.map(() => 0);
   state.elapsedBeforeStart = 0;
   state.answerLocked = false;
+  state.completedRecordSaved = false;
+  elements.targetWrap.classList.remove("is-switching");
   elements.stage.classList.add("is-idle");
   elements.stage.classList.remove("is-complete");
-  elements.stageCaption.textContent = "准备开始";
+  elements.stageCaption.textContent = `${getRoundProgressLabel()} · 准备开始`;
   setControlsEnabled(false);
   setStartButton("start");
   chooseNextDirection();
   updateMetrics();
+}
+
+function startNextRound() {
+  clearFeedback();
+  state.currentRoundIndex += 1;
+  state.elapsedBeforeStart = 0;
+  state.answerLocked = false;
+  elements.stage.classList.remove("is-complete");
+  chooseNextDirection();
+  startSession();
 }
 
 function handleStartButton() {
@@ -353,6 +523,10 @@ function handleStartButton() {
   }
   if (state.status === "paused") {
     startSession();
+    return;
+  }
+  if (state.status === "between-rounds") {
+    startNextRound();
     return;
   }
   if (state.status === "complete") {
@@ -556,6 +730,7 @@ restoreSettings();
 saveSettings();
 updateSettingsUi();
 updateCalibrationState();
+loadTrainingHistory();
 resetSession();
 
 if (!state.calibration) {

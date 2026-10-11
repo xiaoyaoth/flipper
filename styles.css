@@ -268,6 +268,16 @@ main {
   display: grid;
   place-items: center;
   overflow: hidden;
+  background: var(--surface);
+  transition: background-color 180ms ease;
+}
+
+.stage.is-correct {
+  background-color: #eef8f3;
+}
+
+.stage.is-wrong {
+  background-color: #fff1ee;
 }
 
 .stage::before,
@@ -316,7 +326,12 @@ main {
   height: var(--target-size);
   display: grid;
   place-items: center;
-  transition: opacity 140ms ease;
+  transition: opacity 200ms ease;
+}
+
+.target-wrap.is-switching {
+  opacity: 0;
+  transition: none;
 }
 
 .optotype {
@@ -621,6 +636,72 @@ input[type="range"] {
   outline-offset: 3px;
 }
 
+.training-history {
+  padding: 20px 0;
+  border-top: 1px solid #d2d9d6;
+}
+
+.history-heading,
+.history-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.history-heading {
+  margin-bottom: 9px;
+}
+
+.history-heading h3 {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.history-heading span,
+.history-empty,
+.history-item p {
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.history-empty {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.history-list {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-item {
+  padding: 10px 0;
+  border-top: 1px solid #d9dfdc;
+}
+
+.history-summary time {
+  color: var(--ink);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.history-summary strong {
+  color: var(--accent-strong);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.history-item p {
+  margin: 4px 0 0;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+}
+
 .session-actions {
   width: min(460px, 100%);
   display: grid;
@@ -861,6 +942,7 @@ footer {
 
   .panel-heading,
   .session-actions,
+  .training-history,
   .safety-note {
     grid-column: 1 / -1;
   }
@@ -958,6 +1040,7 @@ footer {
 
   .panel-heading,
   .session-actions,
+  .training-history,
   .safety-note {
     grid-column: auto;
   }
@@ -1077,8 +1160,8 @@ body.is-session-active .focus-countdown {
   top: 0;
   left: 50%;
   z-index: 2;
-  width: 88px;
-  min-height: 38px;
+  width: 156px;
+  min-height: 52px;
   display: grid;
   align-content: start;
   justify-items: center;
@@ -1095,6 +1178,13 @@ body.is-session-active .focus-countdown span {
   font-weight: 600;
 }
 
+body.is-session-active .focus-countdown .focus-round-label {
+  margin-bottom: 2px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 800;
+}
+
 body.is-session-active .focus-countdown strong {
   color: var(--muted);
   font-size: 16px;
@@ -1109,6 +1199,11 @@ body.is-session-active .stage::after {
 
 body.is-session-active .target-wrap {
   opacity: 1;
+  transition: opacity 200ms ease;
+}
+
+body.is-session-active .target-wrap.is-switching {
+  opacity: 0;
   transition: none;
 }
 
