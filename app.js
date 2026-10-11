@@ -58,12 +58,8 @@ const state = {
   timerId: null,
   feedbackTimerId: null,
   answerLocked: false,
-  startPending: false,
   calibration: readJson(CALIBRATION_KEY),
 };
-
-let voiceControl = null;
-let distanceControl = null;
 
 function readJson(key) {
   try {
@@ -306,8 +302,6 @@ function startSession() {
   setStartButton("pause");
   state.timerId = window.setInterval(updateMetrics, 200);
   updateMetrics();
-  distanceControl?.onSessionStart();
-  voiceControl?.onSessionStart();
 }
 
 function pauseSession() {
@@ -319,8 +313,6 @@ function pauseSession() {
   setControlsEnabled(false);
   setStartButton("resume");
   updateMetrics();
-  distanceControl?.onSessionStop();
-  voiceControl?.onSessionStop();
 }
 
 function completeSession() {
@@ -335,8 +327,6 @@ function completeSession() {
   setControlsEnabled(false);
   setStartButton("start");
   updateMetrics();
-  distanceControl?.onSessionStop();
-  voiceControl?.onSessionStop();
 }
 
 function resetSession() {
@@ -354,20 +344,15 @@ function resetSession() {
   setStartButton("start");
   chooseNextDirection();
   updateMetrics();
-  distanceControl?.onSessionReset();
-  voiceControl?.onSessionStop();
 }
 
-async function handleStartButton() {
+function handleStartButton() {
   if (state.status === "running") {
     pauseSession();
     return;
   }
   if (state.status === "paused") {
     startSession();
-    return;
-  }
-  if (state.startPending) {
     return;
   }
   if (state.status === "complete") {
@@ -377,20 +362,7 @@ async function handleStartButton() {
     openCalibration(true);
     return;
   }
-
-  state.startPending = true;
-  elements.startButton.disabled = true;
-  try {
-    const ready = distanceControl
-      ? await distanceControl.prepareForSession()
-      : true;
-    if (ready && state.status === "idle") {
-      startSession();
-    }
-  } finally {
-    state.startPending = false;
-    elements.startButton.disabled = false;
-  }
+  startSession();
 }
 
 function saveSettings() {
@@ -570,11 +542,8 @@ document.addEventListener("keydown", (event) => {
 });
 
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    distanceControl?.onVisibilityHidden();
-    if (state.status === "running") {
-      pauseSession();
-    }
+  if (document.hidden && state.status === "running") {
+    pauseSession();
   }
 });
 
@@ -582,17 +551,6 @@ window.addEventListener("resize", () => {
   updateTargetSize();
 });
 window.visualViewport?.addEventListener("resize", updateTargetSize);
-
-if (window.ClarityVoiceControl) {
-  voiceControl = new window.ClarityVoiceControl({
-    onDirection: answer,
-    isSessionRunning: () => state.status === "running",
-  });
-}
-
-if (window.ClarityDistanceControl) {
-  distanceControl = new window.ClarityDistanceControl();
-}
 
 restoreSettings();
 saveSettings();
