@@ -1,5 +1,6 @@
 const CALIBRATION_KEY = "clarity-flipper-calibration-v2";
-const SETTINGS_KEY = "clarity-flipper-settings-v1";
+const SETTINGS_KEY = "clarity-flipper-settings-v2";
+const LEGACY_SETTINGS_KEY = "clarity-flipper-settings-v1";
 const TRAINING_HISTORY_KEY = "clarity-flipper-history-v1";
 const DEFAULT_PIXELS_PER_MM = 96 / 25.4;
 const SNELLEN_VIEWING_DISTANCE_MM = 400;
@@ -549,17 +550,20 @@ function saveSettings() {
 
 function restoreSettings() {
   const settings = readJson(SETTINGS_KEY);
-  if (!settings) {
+  const storedPreferences = settings || readJson(LEGACY_SETTINGS_KEY);
+  if (!storedPreferences) {
     return;
   }
 
-  if (SNELLEN_DENOMINATORS.includes(settings.snellenDenominator)) {
-    state.snellenDenominator = settings.snellenDenominator;
+  if (SNELLEN_DENOMINATORS.includes(storedPreferences.snellenDenominator)) {
+    state.snellenDenominator = storedPreferences.snellenDenominator;
   }
-  if ([60, 120, 180].includes(settings.durationSeconds)) {
+  if (settings && [60, 120, 180].includes(settings.durationSeconds)) {
     state.durationSeconds = settings.durationSeconds;
+  } else if ([120, 180].includes(storedPreferences.durationSeconds)) {
+    state.durationSeconds = storedPreferences.durationSeconds;
   }
-  state.soundEnabled = Boolean(settings.soundEnabled);
+  state.soundEnabled = Boolean(storedPreferences.soundEnabled);
 }
 
 function updateSettingsUi() {
