@@ -26,7 +26,7 @@
       sizes="192x192"
       href="./icons/icon-192.png"
     />
-    <link rel="stylesheet" href="./styles.css?v=20261011-3" />
+    <link rel="stylesheet" href="./styles.css?v=20261011-4" />
   </head>
   <body>
     <div class="app-shell">
@@ -205,22 +205,73 @@
             </div>
           </div>
 
-          <section class="training-history" aria-labelledby="historyTitle">
-            <div class="history-heading">
-              <h3 id="historyTitle">训练记录</h3>
-              <span>最近 10 次</span>
-            </div>
-            <p class="history-empty" id="historyEmpty">
-              完成左眼、右眼和双眼训练后显示记录
-            </p>
-            <ol class="history-list" id="historyList"></ol>
-          </section>
-
           <p class="safety-note">
             保持约 40 cm 视距。出现眼痛、眩晕或持续模糊时请停止训练。
           </p>
         </aside>
       </main>
+
+      <section class="report-band" aria-labelledby="reportTitle">
+        <div class="report-inner">
+          <div class="report-heading">
+            <div>
+              <span class="eyebrow">训练报告</span>
+              <h2 id="reportTitle">翻转趋势</h2>
+            </div>
+            <span>最近 10 次训练</span>
+          </div>
+
+          <p class="report-empty" id="historyEmpty">
+            完成一次左眼、右眼和双眼训练后生成报告
+          </p>
+
+          <div class="report-grid" id="historyReport" hidden>
+            <section class="trend-report" aria-labelledby="trendTitle">
+              <div class="report-section-heading">
+                <h3 id="trendTitle">分眼趋势</h3>
+                <div class="report-legend" aria-label="曲线图例">
+                  <span data-series="left">左眼</span>
+                  <span data-series="right">右眼</span>
+                  <span data-series="both">双眼</span>
+                </div>
+              </div>
+              <div class="chart-scroll">
+                <svg
+                  class="history-chart"
+                  id="historyChart"
+                  viewBox="0 0 720 260"
+                  role="img"
+                  aria-labelledby="historyChartTitle historyChartDescription"
+                >
+                  <title id="historyChartTitle">分眼翻转次数趋势</title>
+                  <desc id="historyChartDescription">
+                    最近训练中左眼、右眼和双眼翻转次数的变化
+                  </desc>
+                </svg>
+              </div>
+            </section>
+
+            <section class="table-report" aria-labelledby="tableTitle">
+              <div class="report-section-heading">
+                <h3 id="tableTitle">分眼记录</h3>
+              </div>
+              <div class="report-table-wrap">
+                <table class="report-table">
+                  <thead>
+                    <tr>
+                      <th scope="col">日期</th>
+                      <th scope="col">左眼</th>
+                      <th scope="col">右眼</th>
+                      <th scope="col">双眼</th>
+                    </tr>
+                  </thead>
+                  <tbody id="historyTableBody"></tbody>
+                </table>
+              </div>
+            </section>
+          </div>
+        </div>
+      </section>
 
       <footer>
         <span>设备校准后，Snellen 视标按 40 cm 视距显示</span>
@@ -334,6 +385,6 @@
       </form>
     </dialog>
 
-    <script src="./app.js?v=20261011-3"></script>
+    <script src="./app.js?v=20261011-4"></script>
   </body>
 </html>

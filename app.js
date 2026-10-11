@@ -8,6 +8,16 @@ const SNELLEN_DENOMINATORS = [20, 25, 30, 40, 50, 60, 80, 100];
 const OPTOTYPE_GRID_UNITS = 5;
 const ANSWER_FEEDBACK_DURATION_MS = 220;
 const MAX_HISTORY_RECORDS = 10;
+const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
+const HISTORY_CHART = {
+  width: 720,
+  height: 260,
+  top: 24,
+  right: 20,
+  bottom: 38,
+  left: 48,
+  gridSteps: 4,
+};
 const TRAINING_ROUNDS = [
   { id: "left", label: "左眼" },
   { id: "right", label: "右眼" },
@@ -53,8 +63,10 @@ const elements = {
   ],
   calibrationError: document.querySelector("#calibrationError"),
   cancelCalibrationButton: document.querySelector("#cancelCalibrationButton"),
-  historyList: document.querySelector("#historyList"),
   historyEmpty: document.querySelector("#historyEmpty"),
+  historyReport: document.querySelector("#historyReport"),
+  historyChart: document.querySelector("#historyChart"),
+  historyTableBody: document.querySelector("#historyTableBody"),
 };
 
 const state = {
@@ -365,10 +377,6 @@ function pauseSession() {
   updateMetrics();
 }
 
-function getTotalFlips() {
-  return state.roundFlips.reduce((total, flips) => total + flips, 0);
-}
-
 function formatHistoryDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
@@ -385,33 +393,203 @@ function formatHistoryDate(value) {
   }).format(date);
 }
 
-function renderHistory() {
-  elements.historyList.replaceChildren();
-  elements.historyEmpty.hidden = state.trainingHistory.length > 0;
+function formatChartDate(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "2-digit",
+    day: "2-digit",
+  }).format(date);
+}
+
+function getRecordRoundFlips(record, roundId) {
+  const round = record.rounds.find((item) => item.id === roundId);
+  return Number.isFinite(round?.flips) ? round.flips : 0;
+}
+
+function createSvgElement(name, attributes = {}, text = "") {
+  const element = document.createElementNS(SVG_NAMESPACE, name);
+  Object.entries(attributes).forEach(([key, value]) => {
+    element.setAttribute(key, String(value));
+  });
+  if (text !== "") {
+    element.textContent = text;
+  }
+  return element;
+}
+
+function renderHistoryTable() {
+  elements.historyTableBody.replaceChildren();
 
   state.trainingHistory.forEach((record) => {
-    const item = document.createElement("li");
-    item.className = "history-item";
-
-    const summary = document.createElement("div");
-    summary.className = "history-summary";
-
+    const row = document.createElement("tr");
+    const dateCell = document.createElement("th");
     const date = document.createElement("time");
     date.dateTime = record.completedAt;
     date.textContent = formatHistoryDate(record.completedAt);
+    dateCell.scope = "row";
+    dateCell.append(date);
+    row.append(dateCell);
 
-    const total = document.createElement("strong");
-    total.textContent = `${record.totalFlips} 次`;
+    TRAINING_ROUNDS.forEach((round) => {
+      const cell = document.createElement("td");
+      cell.textContent = String(getRecordRoundFlips(record, round.id));
+      row.append(cell);
+    });
 
-    const details = document.createElement("p");
-    details.textContent = record.rounds
-      .map((round) => `${round.label} ${round.flips}`)
-      .join(" · ");
-
-    summary.append(date, total);
-    item.append(summary, details);
-    elements.historyList.append(item);
+    elements.historyTableBody.append(row);
   });
+}
+
+function renderHistoryChart() {
+  const records = [...state.trainingHistory].reverse();
+  const {
+    width,
+    height,
+    top,
+    right,
+    bottom,
+    left,
+    gridSteps,
+  } = HISTORY_CHART;
+  const plotWidth = width - left - right;
+  const plotHeight = height - top - bottom;
+  const maximumFlips = Math.max(
+    1,
+    ...records.flatMap((record) =>
+      TRAINING_ROUNDS.map((round) =>
+        getRecordRoundFlips(record, round.id),
+      ),
+    ),
+  );
+  const gridInterval = Math.max(1, Math.ceil(maximumFlips / gridSteps));
+  const chartMaximum = gridInterval * gridSteps;
+
+  const title = createSvgElement(
+    "title",
+    { id: "historyChartTitle" },
+    "分眼翻转次数趋势",
+  );
+  const description = createSvgElement(
+    "desc",
+    { id: "historyChartDescription" },
+    "最近训练中左眼、右眼和双眼翻转次数的变化",
+  );
+  const grid = createSvgElement("g", { class: "chart-grid" });
+  const seriesGroup = createSvgElement("g", { class: "chart-series" });
+  const labels = createSvgElement("g", { class: "chart-labels" });
+
+  for (let index = 0; index <= gridSteps; index += 1) {
+    const y = top + (plotHeight * index) / gridSteps;
+    const value = chartMaximum - gridInterval * index;
+    grid.append(
+      createSvgElement("line", {
+        x1: left,
+        x2: width - right,
+        y1: y,
+        y2: y,
+      }),
+    );
+    labels.append(
+      createSvgElement(
+        "text",
+        {
+          x: left - 10,
+          y: y + 3,
+          "text-anchor": "end",
+          class: "chart-y-label",
+        },
+        value,
+      ),
+    );
+  }
+
+  records.forEach((record, index) => {
+    const x =
+      records.length === 1
+        ? left + plotWidth / 2
+        : left + (plotWidth * index) / (records.length - 1);
+    labels.append(
+      createSvgElement(
+        "text",
+        {
+          x,
+          y: height - 12,
+          "text-anchor": "middle",
+          class: "chart-x-label",
+        },
+        formatChartDate(record.completedAt),
+      ),
+    );
+  });
+
+  TRAINING_ROUNDS.forEach((round) => {
+    const points = records.map((record, index) => {
+      const flips = getRecordRoundFlips(record, round.id);
+      const x =
+        records.length === 1
+          ? left + plotWidth / 2
+          : left + (plotWidth * index) / (records.length - 1);
+      const y = top + plotHeight - (flips / chartMaximum) * plotHeight;
+      return { x, y, flips, completedAt: record.completedAt };
+    });
+    const pathData = points
+      .map(
+        (point, index) =>
+          `${index === 0 ? "M" : "L"} ${point.x.toFixed(2)} ${point.y.toFixed(2)}`,
+      )
+      .join(" ");
+    seriesGroup.append(
+      createSvgElement("path", {
+        d: pathData,
+        class: "chart-line",
+        "data-series": round.id,
+      }),
+    );
+
+    points.forEach((point) => {
+      const marker = createSvgElement("circle", {
+        cx: point.x,
+        cy: point.y,
+        r: 4,
+        class: "chart-point",
+        "data-series": round.id,
+      });
+      marker.append(
+        createSvgElement(
+          "title",
+          {},
+          `${formatHistoryDate(point.completedAt)} ${round.label} ${point.flips} 次`,
+        ),
+      );
+      seriesGroup.append(marker);
+    });
+  });
+
+  elements.historyChart.replaceChildren(
+    title,
+    description,
+    grid,
+    seriesGroup,
+    labels,
+  );
+}
+
+function renderHistoryReport() {
+  const hasHistory = state.trainingHistory.length > 0;
+  elements.historyEmpty.hidden = hasHistory;
+  elements.historyReport.hidden = !hasHistory;
+
+  if (!hasHistory) {
+    elements.historyTableBody.replaceChildren();
+    return;
+  }
+
+  renderHistoryChart();
+  renderHistoryTable();
 }
 
 function loadTrainingHistory() {
@@ -422,12 +600,17 @@ function loadTrainingHistory() {
           (record) =>
             record &&
             typeof record.completedAt === "string" &&
-            Number.isFinite(record.totalFlips) &&
-            Array.isArray(record.rounds),
+            Array.isArray(record.rounds) &&
+            TRAINING_ROUNDS.every((round) =>
+              record.rounds.some(
+                (item) =>
+                  item.id === round.id && Number.isFinite(item.flips),
+              ),
+            ),
         )
         .slice(0, MAX_HISTORY_RECORDS)
     : [];
-  renderHistory();
+  renderHistoryReport();
 }
 
 function saveCompletedTraining() {
@@ -437,7 +620,6 @@ function saveCompletedTraining() {
 
   const record = {
     completedAt: new Date().toISOString(),
-    totalFlips: getTotalFlips(),
     durationSeconds: state.durationSeconds,
     snellenDenominator: state.snellenDenominator,
     rounds: TRAINING_ROUNDS.map((round, index) => ({
@@ -452,7 +634,7 @@ function saveCompletedTraining() {
   ].slice(0, MAX_HISTORY_RECORDS);
   state.completedRecordSaved = true;
   writeJson(TRAINING_HISTORY_KEY, state.trainingHistory);
-  renderHistory();
+  renderHistoryReport();
 }
 
 function completeRound() {
@@ -478,7 +660,9 @@ function completeRound() {
   } else {
     state.status = "complete";
     elements.stageCaption.textContent = "本次训练完成";
-    elements.feedback.textContent = `三轮共翻转 ${getTotalFlips()} 次`;
+    elements.feedback.textContent = TRAINING_ROUNDS.map(
+      (round, index) => `${round.label} ${state.roundFlips[index]} 次`,
+    ).join(" · ");
     elements.feedback.className = "feedback is-correct";
     setStartButton("restart");
     saveCompletedTraining();
